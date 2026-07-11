@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel Administrativo | Ortopédicos Canaan</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/fonts/poppins.css">
+  <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/admin.css?v=6">
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div class="login-screen" id="loginScreen">
+    <form class="login-box" id="loginForm">
+      <img src="assets/img/logo.png" alt="Ortopédicos Canaan" class="login-logo-img">
+      <h1>Panel Administrativo</h1>
+      <p class="login-sub">Ingresa con tu usuario y contraseña</p>
+
+      <label>Correo</label>
+      <input type="email" id="loginEmail" placeholder="tucorreo@ejemplo.com" required>
+
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" required>
+
+      <button type="submit" class="btn-primary" id="loginBtn">Ingresar</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="dashboard" id="dashboard" style="display:none">
+    <header class="admin-header">
+      <div class="admin-logo"><img src="assets/img/logo-white.png" alt="Canaan" class="admin-logo-img"> Panel</div>
+      <div class="admin-user">
+        <a href="index.html" target="_blank" class="link-store">Ver tienda ↗</a>
+        <span id="adminEmail"></span>
+        <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <div class="admin-toolbar">
+        <h2>Productos <span id="productCount" class="count-badge">0</span></h2>
+        <button class="btn-primary" id="newProductBtn">＋ Nuevo producto</button>
+      </div>
+
+      <div class="admin-loading" id="adminLoading">Cargando productos...</div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="productsTable">
+          <thead>
+            <tr>
+              <th>Foto</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="productsTbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== FORM MODAL ===== -->
+  <div class="modal" id="formModal">
+    <div class="modal-box">
+      <button class="modal-close" id="formClose">✕</button>
+      <h2 id="formTitle">Nuevo producto</h2>
+
+      <form id="productForm">
+        <input type="hidden" id="pId">
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Nombre *</label>
+            <input type="text" id="pName" required>
+          </div>
+
+          <div class="form-field">
+            <label>Categoría *</label>
+            <select id="pCategory" required></select>
+          </div>
+
+          <div class="form-field">
+            <label>Marca</label>
+            <input type="text" id="pBrand">
+          </div>
+
+          <div class="form-field">
+            <label>Etiqueta (ej. Más vendido)</label>
+            <input type="text" id="pTag" placeholder="Opcional">
+          </div>
+
+          <div class="form-field">
+            <label>Precio *</label>
+            <input type="number" id="pPrice" min="0" required>
+          </div>
+
+          <div class="form-field">
+            <label>Precio anterior (para descuento)</label>
+            <input type="number" id="pOldPrice" min="0" placeholder="0 = sin descuento">
+          </div>
+
+          <div class="form-field">
+            <label>Stock (unidades)</label>
+            <input type="number" id="pStock" min="0" value="0">
+          </div>
+
+          <div class="form-field">
+            <label>Vendidos (para mostrar)</label>
+            <input type="number" id="pSold" min="0" value="0">
+          </div>
+
+          <div class="form-field">
+            <label>Calificación (1 a 5)</label>
+            <input type="number" id="pRating" min="1" max="5" step="0.1" value="5">
+          </div>
+
+          <div class="form-field">
+            <label>Tallas (separadas por coma)</label>
+            <input type="text" id="pSizes" placeholder="S, M, L, XL">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Colores (formato Nombre:color, separados por coma)</label>
+          <input type="text" id="pColors" placeholder="Negro:#222, Azul:#2a5db0">
+          <small>Ejemplo: Negro:#222222, Azul:#2a5db0</small>
+        </div>
+
+        <div class="form-field">
+          <label>Descripción</label>
+          <textarea id="pDesc" rows="3"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label>Fotos del producto (puedes elegir varias)</label>
+          <input type="file" id="pImage" accept="image/*" multiple>
+          <small>Cada foto se ajusta sola a formato cuadrado (800×800) con fondo blanco. La primera será la principal.</small>
+          <div class="img-preview" id="imgPreview"></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="formCancel">Cancelar</button>
+          <button type="submit" class="btn-primary" id="saveBtn">Guardar producto</button>
+        </div>
+        <div class="form-error" id="formError"></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js?v=3"></script>
+  <script src="assets/js/products.js?v=4"></script>
+  <script src="assets/js/admin.js?v=3"></script>
+</body>
+</html>
