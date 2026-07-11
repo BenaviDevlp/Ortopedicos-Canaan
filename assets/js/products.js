@@ -3,8 +3,8 @@
    Cambia números de WhatsApp, precios, stock, imágenes, etc.
    ========================================================= */
 
-// Número de WhatsApp de la tienda (formato internacional sin + ni espacios)
-const WHATSAPP_NUMBER = "573057420352";
+// Número de WhatsApp de la tienda (se puede sobrescribir desde el panel)
+let WHATSAPP_NUMBER = "573057420352";
 
 // Configuración de la tienda (fácil de editar)
 const STORE = {
@@ -32,8 +32,8 @@ const TESTIMONIALS = [
   { name: "Diana C.", text: "Me encantó lo fácil que fue pedir por WhatsApp. Súper recomendados, muy amables y cumplidos.", stars: 5 },
 ];
 
-// Categorías con su ícono (emoji provisional mientras pones imágenes)
-const CATEGORIES = [
+// Categorías (respaldo; se sobrescriben con las del panel si existen)
+let CATEGORIES = [
   { name: "Protección", icon: "fa-solid fa-shield-halved" },
   { name: "Oxigenoterapia", icon: "fa-solid fa-lungs" },
   { name: "Órtesis y Ortopedia", icon: "fa-solid fa-bone" },
@@ -45,8 +45,8 @@ const CATEGORIES = [
   { name: "Cuidado personal y bienestar", icon: "fa-solid fa-shoe-prints" },
 ];
 
-// Slides del banner principal (imagen de fondo + texto)
-const SLIDES = [
+// Slides del banner principal (respaldo; se sobrescriben con los del panel)
+let SLIDES = [
   {
     title: "Asesoría profesional",
     text: "Te ayudamos a elegir el producto ortopédico <strong>ideal para tu bienestar</strong>. Atención personalizada por WhatsApp.",

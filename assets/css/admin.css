@@ -268,3 +268,150 @@ input, select, textarea, button { font-family: inherit; }
   .admin-logo { font-size: 14px; }
   .admin-logo-img { height: 28px; }
 }
+
+/* =========================================================
+   NAVEGACIÓN DEL PANEL
+   ========================================================= */
+.admin-nav {
+  max-width: 1100px;
+  margin: 18px auto 0;
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-nav-btn {
+  background: #fff;
+  border: 1px solid var(--borde);
+  color: var(--texto);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-nav-btn i { color: var(--azul); }
+.admin-nav-btn.active { background: var(--azul); color: #fff; }
+.admin-nav-btn.active i { color: var(--amarillo); }
+
+.view-title { color: var(--azul); font-size: 22px; }
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 18px 0 26px;
+}
+.dash-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.dash-ic {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--gris);
+  display: grid; place-items: center;
+  font-size: 20px;
+  color: var(--azul);
+  flex-shrink: 0;
+}
+.dash-val { font-size: 22px; font-weight: 800; color: var(--azul); }
+.dash-lbl { font-size: 13px; color: #6b7280; }
+.dash-block {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  margin-bottom: 18px;
+}
+.dash-block h3 { color: var(--azul); font-size: 16px; margin-bottom: 12px; }
+.dash-list { display: flex; flex-direction: column; gap: 8px; }
+.dash-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borde);
+  font-size: 14px;
+}
+.dash-item:last-child { border-bottom: none; }
+.txt-red { color: var(--rojo); }
+.txt-orange { color: #d9680f; }
+
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
+.config-form { background: #fff; border-radius: 12px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,.06); max-width: 820px; }
+.config-section { border-bottom: 1px solid var(--borde); padding-bottom: 18px; margin-bottom: 18px; }
+.config-section h3 { color: var(--azul); font-size: 16px; margin-bottom: 14px; }
+.config-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.btn-mini {
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-mini:hover { background: var(--azul-osc); }
+
+.slides-editor { display: flex; flex-direction: column; gap: 14px; }
+.slide-edit { border: 1px solid var(--borde); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.slide-edit-head { display: flex; justify-content: space-between; align-items: center; color: var(--azul); }
+.slide-edit input { width: 100%; padding: 9px 11px; border: 1px solid var(--borde); border-radius: 7px; font-size: 14px; }
+.s-img-row { display: flex; gap: 8px; align-items: center; }
+.s-img-row .s-image { flex: 1; }
+.s-upload-label { white-space: nowrap; display: inline-block; }
+.s-preview { max-width: 220px; border-radius: 8px; border: 1px solid var(--borde); margin-top: 4px; }
+
+/* =========================================================
+   RESEÑAS (editor)
+   ========================================================= */
+.reviews-editor { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.rev-empty { color: #9aa1b0; font-size: 13px; }
+.rev-row { display: flex; gap: 8px; align-items: center; }
+.rev-row .rev-user { flex: 0 0 130px; }
+.rev-row .rev-text { flex: 1; }
+.rev-row input, .rev-row select { padding: 8px 10px; border: 1px solid var(--borde); border-radius: 7px; font-size: 13px; }
+.rev-del {
+  border: none;
+  background: rgba(230,57,70,.9);
+  color: #fff;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.rev-del:hover { background: var(--rojo); }
+
+/* Modal categoría (pequeño) e icono */
+.modal-box-sm { max-width: 460px; }
+.icon-preview { margin-top: 8px; font-size: 26px; color: var(--azul); }
+
+/* =========================================================
+   RESPONSIVE PANEL (secciones nuevas)
+   ========================================================= */
+@media (max-width: 700px) {
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-nav { padding: 0 14px; }
+  .rev-row { flex-wrap: wrap; }
+  .rev-row .rev-user { flex: 1 1 100%; }
+  .rev-row .rev-text { flex: 1 1 100%; }
+}
+@media (max-width: 420px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}

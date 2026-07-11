@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/fonts/poppins.css">
   <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/admin.css?v=6">
+  <link rel="stylesheet" href="assets/css/admin.css?v=7">
 </head>
 <body>
 
@@ -41,28 +41,130 @@
       </div>
     </header>
 
-    <main class="admin-main">
-      <div class="admin-toolbar">
-        <h2>Productos <span id="productCount" class="count-badge">0</span></h2>
-        <button class="btn-primary" id="newProductBtn">＋ Nuevo producto</button>
-      </div>
+    <nav class="admin-nav">
+      <button class="admin-nav-btn active" data-view="Dashboard"><i class="fa-solid fa-chart-simple"></i> Resumen</button>
+      <button class="admin-nav-btn" data-view="Productos"><i class="fa-solid fa-box"></i> Productos</button>
+      <button class="admin-nav-btn" data-view="Categorias"><i class="fa-solid fa-tags"></i> Categorías</button>
+      <button class="admin-nav-btn" data-view="Config"><i class="fa-solid fa-gear"></i> Configuración</button>
+    </nav>
 
-      <div class="admin-loading" id="adminLoading">Cargando productos...</div>
-      <div class="admin-table-wrap">
-        <table class="admin-table" id="productsTable">
-          <thead>
-            <tr>
-              <th>Foto</th>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="productsTbody"></tbody>
-        </table>
-      </div>
+    <main class="admin-main">
+      <!-- ===== RESUMEN ===== -->
+      <section class="admin-view" id="viewDashboard">
+        <h2 class="view-title">Resumen</h2>
+        <div class="dash-grid" id="dashGrid"></div>
+        <div class="dash-block">
+          <h3>Productos más vendidos</h3>
+          <div id="dashTop" class="dash-list"></div>
+        </div>
+        <div class="dash-block">
+          <h3>Stock bajo o agotado</h3>
+          <div id="dashLow" class="dash-list"></div>
+        </div>
+      </section>
+
+      <!-- ===== PRODUCTOS ===== -->
+      <section class="admin-view" id="viewProductos" style="display:none">
+        <div class="admin-toolbar">
+          <h2 class="view-title">Productos <span id="productCount" class="count-badge">0</span></h2>
+          <button class="btn-primary" id="newProductBtn">＋ Nuevo producto</button>
+        </div>
+        <div class="admin-loading" id="adminLoading">Cargando productos...</div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== CATEGORÍAS ===== -->
+      <section class="admin-view" id="viewCategorias" style="display:none">
+        <div class="admin-toolbar">
+          <h2 class="view-title">Categorías <span id="catCount" class="count-badge">0</span></h2>
+          <button class="btn-primary" id="newCatBtn">＋ Nueva categoría</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Icono</th><th>Nombre</th><th>Orden</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="catsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== CONFIGURACIÓN ===== -->
+      <section class="admin-view" id="viewConfig" style="display:none">
+        <h2 class="view-title">Configuración del sitio</h2>
+        <form id="configForm" class="config-form">
+          <div class="config-section">
+            <h3>Contacto</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>WhatsApp (con indicativo)</label>
+                <input type="text" id="cWhatsapp" placeholder="+57 305 742 0352">
+              </div>
+              <div class="form-field">
+                <label>Teléfono fijo</label>
+                <input type="text" id="cTelefono" placeholder="(601) 569 1896">
+              </div>
+              <div class="form-field">
+                <label>Correo</label>
+                <input type="text" id="cCorreo" placeholder="correo@ejemplo.com">
+              </div>
+              <div class="form-field">
+                <label>Dirección</label>
+                <input type="text" id="cDireccion" placeholder="Dirección del local">
+              </div>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <h3>Promociones y envío</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Cupón</label>
+                <input type="text" id="cCupon" placeholder="BIENVENIDA10">
+              </div>
+              <div class="form-field">
+                <label>Texto del cupón</label>
+                <input type="text" id="cCuponTexto" placeholder="10% en tu primera compra">
+              </div>
+              <div class="form-field">
+                <label>Envío gratis desde ($)</label>
+                <input type="number" id="cEnvio" min="0" placeholder="150000">
+              </div>
+              <div class="form-field">
+                <label>Anuncio superior</label>
+                <input type="text" id="cAnuncio" placeholder="Envío GRATIS en compras...">
+              </div>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="config-head">
+              <h3>Banner (diapositivas)</h3>
+              <button type="button" class="btn-mini" id="addSlideBtn">＋ Agregar diapositiva</button>
+            </div>
+            <div id="slidesEditor" class="slides-editor"></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="saveConfigBtn">Guardar configuración</button>
+          </div>
+          <div class="form-error" id="configError"></div>
+        </form>
+      </section>
     </main>
   </div>
 
@@ -139,6 +241,14 @@
         </div>
 
         <div class="form-field">
+          <div class="config-head">
+            <label>Reseñas de clientes</label>
+            <button type="button" class="btn-mini" id="addReviewBtn">＋ Agregar reseña</button>
+          </div>
+          <div id="reviewsEditor" class="reviews-editor"></div>
+        </div>
+
+        <div class="form-field">
           <label>Fotos del producto (puedes elegir varias)</label>
           <input type="file" id="pImage" accept="image/*" multiple>
           <small>Cada foto se ajusta sola a formato cuadrado (800×800) con fondo blanco. La primera será la principal.</small>
@@ -154,11 +264,41 @@
     </div>
   </div>
 
+  <!-- ===== MODAL CATEGORÍA ===== -->
+  <div class="modal" id="catModal">
+    <div class="modal-box modal-box-sm">
+      <button class="modal-close" id="catClose">✕</button>
+      <h2 id="catFormTitle">Nueva categoría</h2>
+      <form id="catForm">
+        <input type="hidden" id="cId">
+        <div class="form-field">
+          <label>Nombre *</label>
+          <input type="text" id="cNombre" required>
+        </div>
+        <div class="form-field">
+          <label>Icono (clase Font Awesome)</label>
+          <input type="text" id="cIcono" placeholder="fa-solid fa-bone">
+          <small>Ejemplos: fa-solid fa-bone, fa-solid fa-wheelchair, fa-solid fa-socks. Ver iconos en fontawesome.com/icons</small>
+          <div class="icon-preview"><i id="cIconoPreview" class="fa-solid fa-tag"></i></div>
+        </div>
+        <div class="form-field">
+          <label>Orden</label>
+          <input type="number" id="cOrden" value="0">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="catCancel">Cancelar</button>
+          <button type="submit" class="btn-primary" id="catSaveBtn">Guardar</button>
+        </div>
+        <div class="form-error" id="catError"></div>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js?v=3"></script>
   <script src="assets/js/products.js?v=4"></script>
-  <script src="assets/js/admin.js?v=3"></script>
+  <script src="assets/js/admin.js?v=4"></script>
 </body>
 </html>

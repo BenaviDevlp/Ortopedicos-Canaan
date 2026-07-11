@@ -51,8 +51,8 @@ function showSlide(i) {
   slideIndex = (i + slides.length) % slides.length;
   slides.forEach((s, idx) => s.classList.toggle("active", idx === slideIndex));
 }
-function initSlider() {
-  renderSlides();
+// Enlaza las flechas y el cambio automático (se llama una sola vez)
+function initSliderControls() {
   $("#heroNext").addEventListener("click", () => showSlide(slideIndex + 1));
   $("#heroPrev").addEventListener("click", () => showSlide(slideIndex - 1));
   setInterval(() => showSlide(slideIndex + 1), 6000);
@@ -74,6 +74,24 @@ function renderCategories() {
   $$(".cat-card").forEach((card) =>
     card.addEventListener("click", () => {
       filterProducts(card.dataset.cat);
+      $("#productos").scrollIntoView({ behavior: "smooth" });
+    })
+  );
+}
+
+// Menú desplegable de categorías (encabezado) generado dinámicamente
+function renderCatMenu() {
+  const wrap = $("#catMenu .container");
+  if (!wrap) return;
+  wrap.innerHTML =
+    `<a href="#" data-cat="all">Todas las categorías</a>` +
+    CATEGORIES.map((c) => `<a href="#" data-cat="${c.name}">${c.name}</a>`).join("");
+
+  wrap.querySelectorAll("a").forEach((a) =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      filterProducts(a.dataset.cat);
+      $("#catMenu").classList.remove("open");
       $("#productos").scrollIntoView({ behavior: "smooth" });
     })
   );
@@ -757,7 +775,8 @@ function closeCart() {
    WHATSAPP
    ========================================================= */
 function openWhatsapp(message) {
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  const num = String(WHATSAPP_NUMBER).replace(/\D/g, ""); // solo dígitos
+  const url = `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank");
 }
 
@@ -809,17 +828,9 @@ function initMenus() {
   overlay.addEventListener("click", closeMobile);
   $$("#mobileMenu a").forEach((a) => a.addEventListener("click", closeMobile));
 
-  // dropdown categorías (desktop)
+  // dropdown categorías (desktop) — los enlaces se generan en renderCatMenu()
   $("#catToggle").addEventListener("click", () =>
     $("#catMenu").classList.toggle("open")
-  );
-  $$("#catMenu a").forEach((a) =>
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      filterProducts(a.dataset.cat);
-      $("#catMenu").classList.remove("open");
-      $("#productos").scrollIntoView({ behavior: "smooth" });
-    })
   );
 
   // carrito
@@ -891,20 +902,78 @@ async function loadProducts() {
   }
 }
 
+// Actualiza un texto por id si el elemento existe y hay valor
+function setText(sel, value) {
+  const el = $(sel);
+  if (el && value) el.textContent = value;
+}
+
+// Carga la configuración del sitio desde el panel (tabla configuracion)
+async function loadConfig() {
+  try {
+    const { data } = await supabaseClient
+      .from("configuracion")
+      .select("*")
+      .eq("id", 1)
+      .single();
+    if (!data) return;
+
+    if (data.whatsapp) { WHATSAPP_NUMBER = data.whatsapp; setText("#fWhatsapp", data.whatsapp); }
+    if (data.telefono) setText("#fTelefono", data.telefono);
+    if (data.correo) { setText("#fCorreo", data.correo); setText("#topMail", data.correo); }
+    if (data.direccion) setText("#fDireccion", data.direccion);
+    if (data.cupon) STORE.coupon = data.cupon;
+    if (data.cupon_texto) STORE.couponText = data.cupon_texto;
+    if (data.envio_gratis) STORE.freeShippingFrom = Number(data.envio_gratis);
+    if (data.anuncio) STORE.announce = data.anuncio;
+    if (Array.isArray(data.slides) && data.slides.length) SLIDES = data.slides;
+  } catch (e) {
+    console.warn("Sin configuración personalizada, usando valores por defecto.", e);
+  }
+}
+
+// Carga las categorías desde el panel (tabla categorias)
+async function loadCategories() {
+  try {
+    const { data } = await supabaseClient
+      .from("categorias")
+      .select("*")
+      .order("orden", { ascending: true });
+    if (data && data.length) {
+      CATEGORIES = data.map((c) => ({ name: c.nombre, icon: c.icono || "fa-solid fa-tag" }));
+    }
+  } catch (e) {
+    console.warn("Sin categorías personalizadas, usando las de respaldo.", e);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+  // 1) Pinta de inmediato con los valores por defecto (respaldo)
   renderAnnounce();
   renderBenefits();
-  initSlider();
+  renderSlides();
+  showSlide(0);
   renderTestimonials();
   renderCategories();
+  renderCatMenu();
   renderTabs();
   initMenus();
   initLightbox();
+  initSliderControls();
   loadCart();
   updateCartUI();
 
-  // Carga desde la base de datos y luego pinta los productos
-  await loadProducts();
+  // 2) Carga desde la base de datos
+  await Promise.all([loadConfig(), loadCategories(), loadProducts()]);
+
+  // 3) Re-pinta lo que pudo cambiar desde el panel
+  renderAnnounce();
+  renderSlides();
+  showSlide(0);
+  renderCategories();
+  renderCatMenu();
+  renderTabs();
   renderOffers();
   renderProducts(PRODUCTS);
+  updateCartUI();
 });

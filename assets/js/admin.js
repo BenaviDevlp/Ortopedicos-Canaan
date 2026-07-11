@@ -11,6 +11,11 @@ const IMG_SIZE = 800;
 let existingImages = [];
 // Fotos nuevas ya procesadas, listas para subir ({ blob, url })
 let newImages = [];
+// Cachés y estados de las nuevas secciones
+let categoriasCache = [];
+let reviewsEdit = [];
+let slidesEdit = [];
+let configId = 1;
 
 /* Procesa la imagen: la ajusta a un cuadrado de IMG_SIZE x IMG_SIZE,
    la centra sobre fondo blanco (sin recortar) y la comprime a JPEG. */
@@ -76,12 +81,35 @@ function showLogin() {
   $("#dashboard").style.display = "none";
 }
 
-function showDashboard(user) {
+async function showDashboard(user) {
   $("#loginScreen").style.display = "none";
   $("#dashboard").style.display = "block";
   $("#adminEmail").textContent = user.email;
-  loadProducts();
+  await loadCategoriasAdmin();
+  await loadProducts();
+  await loadConfigAdmin();
+  setView("Dashboard");
 }
+
+/* =========================================================
+   NAVEGACIÓN ENTRE SECCIONES
+   ========================================================= */
+function setView(name) {
+  ["Dashboard", "Productos", "Categorias", "Config"].forEach((v) => {
+    const sec = $("#view" + v);
+    if (sec) sec.style.display = v === name ? "" : "none";
+  });
+  document.querySelectorAll(".admin-nav-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.view === name)
+  );
+  if (name === "Dashboard") renderDashboard();
+  if (name === "Categorias") renderCatsTable();
+  if (name === "Config") renderConfigForm();
+}
+
+document.querySelectorAll(".admin-nav-btn").forEach((b) =>
+  b.addEventListener("click", () => setView(b.dataset.view))
+);
 
 $("#loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -133,6 +161,7 @@ async function loadProducts() {
   }
   productsCache = data || [];
   renderTable();
+  renderDashboard();
 }
 
 function renderTable() {
@@ -182,11 +211,18 @@ function renderTable() {
 /* =========================================================
    FORMULARIO (crear / editar)
    ========================================================= */
+// Nombres de categorías (de la BD si hay, si no las de respaldo)
+function catNames() {
+  return categoriasCache.length
+    ? categoriasCache.map((c) => c.nombre)
+    : CATEGORIES.map((c) => c.name);
+}
+
 function fillCategories() {
   const sel = $("#pCategory");
-  sel.innerHTML = CATEGORIES.map(
-    (c) => `<option value="${c.name}">${c.name}</option>`
-  ).join("");
+  sel.innerHTML = catNames()
+    .map((n) => `<option value="${n}">${n}</option>`)
+    .join("");
 }
 
 function openForm(id) {
@@ -215,6 +251,7 @@ function openForm(id) {
       .map((c) => `${c.name}:${c.hex}`)
       .join(", ");
     $("#pDesc").value = p.description || "";
+    reviewsEdit = Array.isArray(p.reviews) ? JSON.parse(JSON.stringify(p.reviews)) : [];
     // cargar imágenes existentes (galería o, si no, la principal)
     if (Array.isArray(p.images) && p.images.length) {
       existingImages = [...p.images];
@@ -224,11 +261,58 @@ function openForm(id) {
   } else {
     $("#formTitle").textContent = "Nuevo producto";
     $("#pId").value = "";
+    reviewsEdit = [];
   }
 
   renderImagePreviews();
+  renderReviewsEditor();
   $("#formModal").classList.add("open");
 }
+
+/* =========================================================
+   EDITOR DE RESEÑAS (dentro del formulario de producto)
+   ========================================================= */
+function renderReviewsEditor() {
+  const wrap = $("#reviewsEditor");
+  if (!reviewsEdit.length) {
+    wrap.innerHTML = `<p class="rev-empty">Sin reseñas. Agrega una para dar confianza.</p>`;
+    return;
+  }
+  wrap.innerHTML = reviewsEdit
+    .map(
+      (r, i) => `
+      <div class="rev-row">
+        <input type="text" class="rev-user" data-i="${i}" placeholder="Nombre" value="${(r.user || "").replace(/"/g, "&quot;")}">
+        <select class="rev-stars" data-i="${i}">
+          ${[5, 4, 3, 2, 1].map((s) => `<option value="${s}" ${Number(r.stars) === s ? "selected" : ""}>${s} ★</option>`).join("")}
+        </select>
+        <input type="text" class="rev-text" data-i="${i}" placeholder="Comentario" value="${(r.text || "").replace(/"/g, "&quot;")}">
+        <button type="button" class="rev-del" data-i="${i}" title="Quitar">&times;</button>
+      </div>`
+    )
+    .join("");
+
+  wrap.querySelectorAll(".rev-user").forEach((el) =>
+    el.addEventListener("input", () => (reviewsEdit[+el.dataset.i].user = el.value))
+  );
+  wrap.querySelectorAll(".rev-text").forEach((el) =>
+    el.addEventListener("input", () => (reviewsEdit[+el.dataset.i].text = el.value))
+  );
+  wrap.querySelectorAll(".rev-stars").forEach((el) =>
+    el.addEventListener("change", () => (reviewsEdit[+el.dataset.i].stars = Number(el.value)))
+  );
+  wrap.querySelectorAll(".rev-del").forEach((el) =>
+    el.addEventListener("click", () => {
+      reviewsEdit.splice(+el.dataset.i, 1);
+      renderReviewsEditor();
+    })
+  );
+}
+
+$("#addReviewBtn").addEventListener("click", () => {
+  reviewsEdit.push({ user: "", stars: 5, text: "" });
+  renderReviewsEditor();
+});
 
 // Dibuja las miniaturas (existentes + nuevas) con botón para quitar cada una
 function renderImagePreviews() {
@@ -367,6 +451,9 @@ $("#productForm").addEventListener("submit", async (e) => {
       sizes: parseSizes($("#pSizes").value),
       colors: parseColors($("#pColors").value),
       description: $("#pDesc").value.trim(),
+      reviews: reviewsEdit
+        .filter((r) => (r.user || "").trim() && (r.text || "").trim())
+        .map((r) => ({ user: r.user.trim(), stars: Number(r.stars) || 5, text: r.text.trim() })),
     };
 
     // subir las fotos nuevas y armar la galería final
@@ -418,6 +505,253 @@ async function deleteProduct(id) {
 // Cerrar modal al hacer clic afuera
 $("#formModal").addEventListener("click", (e) => {
   if (e.target.id === "formModal") closeForm();
+});
+
+/* =========================================================
+   DASHBOARD (resumen)
+   ========================================================= */
+let siteConfig = {};
+
+function dashCard(icon, label, value) {
+  return `<div class="dash-card">
+    <div class="dash-ic"><i class="fa-solid ${icon}"></i></div>
+    <div><div class="dash-val">${value}</div><div class="dash-lbl">${label}</div></div>
+  </div>`;
+}
+
+function renderDashboard() {
+  const grid = $("#dashGrid");
+  if (!grid) return;
+  const total = productsCache.length;
+  const agotados = productsCache.filter((p) => (p.stock || 0) <= 0).length;
+  const stockBajo = productsCache.filter((p) => (p.stock || 0) > 0 && (p.stock || 0) <= 10).length;
+  const inventario = productsCache.reduce(
+    (s, p) => s + (Number(p.price) || 0) * (Number(p.stock) || 0), 0
+  );
+
+  grid.innerHTML =
+    dashCard("fa-box", "Productos", total) +
+    dashCard("fa-circle-xmark", "Agotados", agotados) +
+    dashCard("fa-triangle-exclamation", "Stock bajo", stockBajo) +
+    dashCard("fa-warehouse", "Valor inventario", money(inventario));
+
+  const top = [...productsCache].filter((p) => p.sold).sort((a, b) => (b.sold || 0) - (a.sold || 0)).slice(0, 5);
+  $("#dashTop").innerHTML = top.length
+    ? top.map((p) => `<div class="dash-item"><span>${p.name}</span><strong>${p.sold} vendidos</strong></div>`).join("")
+    : `<p class="rev-empty">Aún no hay datos de ventas.</p>`;
+
+  const low = productsCache.filter((p) => (p.stock || 0) <= 10).sort((a, b) => (a.stock || 0) - (b.stock || 0)).slice(0, 10);
+  $("#dashLow").innerHTML = low.length
+    ? low.map((p) => `<div class="dash-item"><span>${p.name}</span><strong class="${(p.stock || 0) <= 0 ? "txt-red" : "txt-orange"}">${(p.stock || 0) <= 0 ? "Agotado" : p.stock + " u."}</strong></div>`).join("")
+    : `<p class="rev-empty">Todo con buen stock.</p>`;
+}
+
+/* =========================================================
+   GESTIÓN DE CATEGORÍAS
+   ========================================================= */
+async function loadCategoriasAdmin() {
+  const { data, error } = await supabaseClient
+    .from("categorias")
+    .select("*")
+    .order("orden", { ascending: true });
+  if (!error) categoriasCache = data || [];
+}
+
+function renderCatsTable() {
+  const tb = $("#catsTbody");
+  $("#catCount").textContent = categoriasCache.length;
+  if (!categoriasCache.length) {
+    tb.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#9aa1b0;padding:24px">Sin categorías. Crea la primera.</td></tr>`;
+    return;
+  }
+  tb.innerHTML = categoriasCache
+    .map(
+      (c) => `
+    <tr>
+      <td><i class="${c.icono || "fa-solid fa-tag"}" style="color:#10267a;font-size:20px"></i></td>
+      <td class="cell-name">${c.nombre}</td>
+      <td>${c.orden || 0}</td>
+      <td><div class="row-actions">
+        <button class="btn-edit" data-cedit="${c.id}">Editar</button>
+        <button class="btn-del" data-cdel="${c.id}">Borrar</button>
+      </div></td>
+    </tr>`
+    )
+    .join("");
+  tb.querySelectorAll("[data-cedit]").forEach((b) => b.addEventListener("click", () => openCatForm(+b.dataset.cedit)));
+  tb.querySelectorAll("[data-cdel]").forEach((b) => b.addEventListener("click", () => deleteCategoria(+b.dataset.cdel)));
+}
+
+function openCatForm(id) {
+  $("#catForm").reset();
+  $("#catError").textContent = "";
+  if (id) {
+    const c = categoriasCache.find((x) => x.id === id);
+    if (!c) return;
+    $("#catFormTitle").textContent = "Editar categoría";
+    $("#cId").value = c.id;
+    $("#cNombre").value = c.nombre || "";
+    $("#cIcono").value = c.icono || "";
+    $("#cOrden").value = c.orden || 0;
+    $("#cIconoPreview").className = c.icono || "fa-solid fa-tag";
+  } else {
+    $("#catFormTitle").textContent = "Nueva categoría";
+    $("#cId").value = "";
+    $("#cIconoPreview").className = "fa-solid fa-tag";
+  }
+  $("#catModal").classList.add("open");
+}
+function closeCatForm() { $("#catModal").classList.remove("open"); }
+
+$("#newCatBtn").addEventListener("click", () => openCatForm(null));
+$("#catClose").addEventListener("click", closeCatForm);
+$("#catCancel").addEventListener("click", closeCatForm);
+$("#catModal").addEventListener("click", (e) => { if (e.target.id === "catModal") closeCatForm(); });
+$("#cIcono").addEventListener("input", () => {
+  $("#cIconoPreview").className = $("#cIcono").value.trim() || "fa-solid fa-tag";
+});
+
+$("#catForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const err = $("#catError"); err.textContent = "";
+  const payload = {
+    nombre: $("#cNombre").value.trim(),
+    icono: $("#cIcono").value.trim() || "fa-solid fa-tag",
+    orden: Number($("#cOrden").value) || 0,
+  };
+  const id = $("#cId").value;
+  const res = id
+    ? await supabaseClient.from("categorias").update(payload).eq("id", id)
+    : await supabaseClient.from("categorias").insert(payload);
+  if (res.error) { err.textContent = "Error: " + res.error.message; return; }
+  toast(id ? "Categoría actualizada" : "Categoría creada");
+  closeCatForm();
+  await loadCategoriasAdmin();
+  renderCatsTable();
+});
+
+async function deleteCategoria(id) {
+  const c = categoriasCache.find((x) => x.id === id);
+  if (!confirm(`¿Borrar la categoría "${c ? c.nombre : ""}"? Los productos que la usan no se borran.`)) return;
+  const { error } = await supabaseClient.from("categorias").delete().eq("id", id);
+  if (error) { toast("Error al borrar"); return; }
+  toast("Categoría borrada");
+  await loadCategoriasAdmin();
+  renderCatsTable();
+}
+
+/* =========================================================
+   CONFIGURACIÓN DEL SITIO
+   ========================================================= */
+async function loadConfigAdmin() {
+  const { data } = await supabaseClient.from("configuracion").select("*").eq("id", 1).single();
+  siteConfig = data || {};
+  slidesEdit = Array.isArray(siteConfig.slides) ? JSON.parse(JSON.stringify(siteConfig.slides)) : [];
+}
+
+function renderConfigForm() {
+  const c = siteConfig || {};
+  $("#cWhatsapp").value = c.whatsapp || "";
+  $("#cTelefono").value = c.telefono || "";
+  $("#cCorreo").value = c.correo || "";
+  $("#cDireccion").value = c.direccion || "";
+  $("#cCupon").value = c.cupon || "";
+  $("#cCuponTexto").value = c.cupon_texto || "";
+  $("#cEnvio").value = c.envio_gratis || "";
+  $("#cAnuncio").value = c.anuncio || "";
+  renderSlidesEditor();
+}
+
+function renderSlidesEditor() {
+  const wrap = $("#slidesEditor");
+  if (!slidesEdit.length) { wrap.innerHTML = `<p class="rev-empty">Sin diapositivas. Agrega una.</p>`; return; }
+  wrap.innerHTML = slidesEdit
+    .map((s, i) => `
+    <div class="slide-edit">
+      <div class="slide-edit-head">
+        <strong>Diapositiva ${i + 1}</strong>
+        <button type="button" class="rev-del" data-sdel="${i}" title="Quitar">&times;</button>
+      </div>
+      <input type="text" class="s-title" data-i="${i}" placeholder="Título" value="${(s.title || "").replace(/"/g, "&quot;")}">
+      <input type="text" class="s-text" data-i="${i}" placeholder="Texto (puedes usar <strong>)" value="${(s.text || "").replace(/"/g, "&quot;")}">
+      <div class="s-img-row">
+        <input type="text" class="s-image" data-i="${i}" placeholder="Ruta o URL de imagen" value="${(s.image || "").replace(/"/g, "&quot;")}">
+        <label class="btn-mini s-upload-label">Subir foto<input type="file" accept="image/*" class="s-upload" data-i="${i}" hidden></label>
+      </div>
+      ${s.image ? `<img class="s-preview" src="${s.image}" alt="">` : ""}
+    </div>`)
+    .join("");
+
+  wrap.querySelectorAll(".s-title").forEach((el) => el.addEventListener("input", () => (slidesEdit[+el.dataset.i].title = el.value)));
+  wrap.querySelectorAll(".s-text").forEach((el) => el.addEventListener("input", () => (slidesEdit[+el.dataset.i].text = el.value)));
+  wrap.querySelectorAll(".s-image").forEach((el) => el.addEventListener("input", () => (slidesEdit[+el.dataset.i].image = el.value)));
+  wrap.querySelectorAll("[data-sdel]").forEach((b) => b.addEventListener("click", () => { slidesEdit.splice(+b.dataset.sdel, 1); renderSlidesEditor(); }));
+  wrap.querySelectorAll(".s-upload").forEach((inp) =>
+    inp.addEventListener("change", async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const i = +inp.dataset.i;
+      toast("Subiendo imagen...");
+      try { slidesEdit[i].image = await uploadBanner(f); renderSlidesEditor(); toast("Imagen subida"); }
+      catch (err) { toast("Error al subir la imagen"); }
+    })
+  );
+}
+
+$("#addSlideBtn").addEventListener("click", () => { slidesEdit.push({ title: "", text: "", image: "" }); renderSlidesEditor(); });
+
+// Redimensiona un banner (sin recortar) y lo sube al bucket
+function resizeBanner(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    const img = new Image();
+    reader.onload = (e) => (img.src = e.target.result);
+    reader.onerror = () => reject(new Error("No se pudo leer"));
+    img.onerror = () => reject(new Error("Imagen no válida"));
+    img.onload = () => {
+      const maxW = 1600;
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error("blob"))), "image/jpeg", 0.82);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadBanner(file) {
+  const blob = await resizeBanner(file);
+  const fileName = `banner_${Date.now()}.jpg`;
+  const { error } = await supabaseClient.storage
+    .from(STORAGE_BUCKET)
+    .upload(fileName, blob, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
+  if (error) throw error;
+  const { data } = supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
+  return data.publicUrl;
+}
+
+$("#configForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const err = $("#configError"); err.textContent = "";
+  const btn = $("#saveConfigBtn"); btn.disabled = true; btn.textContent = "Guardando...";
+  const payload = {
+    id: 1,
+    whatsapp: $("#cWhatsapp").value.trim(),
+    telefono: $("#cTelefono").value.trim(),
+    correo: $("#cCorreo").value.trim(),
+    direccion: $("#cDireccion").value.trim(),
+    cupon: $("#cCupon").value.trim(),
+    cupon_texto: $("#cCuponTexto").value.trim(),
+    envio_gratis: Number($("#cEnvio").value) || 0,
+    anuncio: $("#cAnuncio").value.trim(),
+    slides: slidesEdit.filter((s) => s.title || s.text || s.image),
+  };
+  const { error } = await supabaseClient.from("configuracion").upsert(payload);
+  btn.disabled = false; btn.textContent = "Guardar configuración";
+  if (error) { err.textContent = "Error: " + error.message; return; }
+  siteConfig = payload;
+  toast("Configuración guardada");
 });
 
 /* =========================================================
