@@ -596,9 +596,12 @@ section h2 {
 .modal-content { padding: 30px; }
 .modal-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 30px;
+  align-items: start;
 }
+/* Permite que las columnas se encojan y el contenido no desborde */
+.modal-gallery, .modal-info { min-width: 0; }
 .modal-img {
   position: relative;
   width: 100%;
@@ -619,11 +622,19 @@ section h2 {
   height: 100%;
   object-fit: cover;
 }
-.modal-info h2 { text-align: left; color: var(--azul); font-size: 24px; }
-.modal-brand { color: #9aa1b0; font-size: 13px; margin-bottom: 8px; }
-.modal-price-row { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.modal-info h2 { text-align: left; color: var(--azul); font-size: 24px; overflow-wrap: anywhere; }
+.modal-brand { color: #9aa1b0; font-size: 13px; margin-bottom: 8px; overflow-wrap: anywhere; }
+.modal-price-row { display: flex; align-items: center; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
 .modal-price { font-size: 26px; font-weight: 800; color: var(--azul); }
-.modal-desc { color: #55607a; font-size: 14px; margin: 14px 0; }
+/* Descripción: respeta saltos de línea, ajusta palabras largas y no desborda */
+.modal-desc {
+  color: #55607a;
+  font-size: 14px;
+  margin: 14px 0;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
 
 .opt-group { margin: 14px 0; }
 .opt-group label { font-weight: 700; font-size: 13px; display: block; margin-bottom: 6px; }
@@ -1218,3 +1229,15 @@ section h2 {
 
 .footer-bottom a { color: var(--amarillo); text-decoration: none; }
 .footer-bottom a:hover { text-decoration: underline; }
+
+/* Ajuste de texto en reseñas y detalle (evita desbordes) */
+.review-text, .review-user, .modal-info { overflow-wrap: anywhere; }
+
+/* Modal en pantallas muy pequeñas: más espacio útil */
+@media (max-width: 480px) {
+  .modal { padding: 10px; }
+  .modal-content { padding: 16px; }
+  .modal-grid { gap: 18px; }
+  .modal-info h2 { font-size: 19px; }
+  .modal-price { font-size: 22px; }
+}
