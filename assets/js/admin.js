@@ -7,15 +7,20 @@ let productsCache = [];
 
 // Tamaño cuadrado estándar para todas las fotos (px)
 const IMG_SIZE = 800;
-// Imágenes ya guardadas del producto que se está editando (URLs)
-let existingImages = [];
-// Fotos nuevas ya procesadas, listas para subir ({ blob, url })
-let newImages = [];
+// Galería del producto en edición: lista ordenada de { url, blob? }
+// - imagen existente: { url, blob: null }
+// - imagen nueva:     { url: objectURL, blob }
+let galleryItems = [];
 // Cachés y estados de las nuevas secciones
 let categoriasCache = [];
 let reviewsEdit = [];
 let slidesEdit = [];
-let configId = 1;
+// Filtros y paginación de la tabla de productos
+let prodSearch = "";
+let prodCatFilter = "";
+let prodStockFilter = "";
+const PAGE_SIZE = 10;
+let visibleCount = PAGE_SIZE;
 
 /* Procesa la imagen: la ajusta a un cuadrado de IMG_SIZE x IMG_SIZE,
    la centra sobre fondo blanco (sin recortar) y la comprime a JPEG. */
@@ -164,35 +169,68 @@ async function loadProducts() {
   renderDashboard();
 }
 
+// Aplica buscador y filtros sobre la caché de productos
+function getFilteredProducts() {
+  let list = [...productsCache];
+  const q = prodSearch.trim().toLowerCase();
+  if (q) {
+    list = list.filter(
+      (p) =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.brand || "").toLowerCase().includes(q)
+    );
+  }
+  if (prodCatFilter) list = list.filter((p) => p.category === prodCatFilter);
+  if (prodStockFilter === "in") list = list.filter((p) => (p.stock || 0) > 0);
+  else if (prodStockFilter === "out") list = list.filter((p) => (p.stock || 0) <= 0);
+  else if (prodStockFilter === "low") list = list.filter((p) => (p.stock || 0) > 0 && (p.stock || 0) <= 10);
+  return list;
+}
+
 function renderTable() {
   const tbody = $("#productsTbody");
   $("#productCount").textContent = productsCache.length;
 
   if (!productsCache.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9aa1b0;padding:30px">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#9aa1b0;padding:30px">
       Aún no hay productos. Haz clic en "＋ Nuevo producto" para agregar el primero.</td></tr>`;
+    $("#loadMoreBtn").style.display = "none";
     return;
   }
 
-  tbody.innerHTML = productsCache
+  const filtered = getFilteredProducts();
+  const shown = filtered.slice(0, visibleCount);
+
+  if (!shown.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#9aa1b0;padding:30px">
+      No hay productos que coincidan con la búsqueda o filtros.</td></tr>`;
+    $("#loadMoreBtn").style.display = "none";
+    return;
+  }
+
+  tbody.innerHTML = shown
     .map((p) => {
       const img = p.image_url
         ? `<img class="cell-img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
         : `<div class="cell-img"><i class="fa-regular fa-image"></i></div>`;
-      const stockPill =
-        p.stock > 0
-          ? `<span class="pill ok">${p.stock} disp.</span>`
-          : `<span class="pill out">Agotado</span>`;
+      const activo = p.activo !== false; // por defecto activo
       return `
-      <tr>
+      <tr class="${activo ? "" : "row-inactive"}">
         <td>${img}</td>
         <td class="cell-name">${p.name}</td>
         <td>${p.category || "-"}</td>
-        <td>${money(p.price)}</td>
-        <td>${stockPill}</td>
+        <td><input class="quick-input" type="number" min="0" value="${Number(p.price) || 0}" data-price="${p.id}"></td>
+        <td><input class="quick-input" type="number" min="0" value="${Number(p.stock) || 0}" data-stock="${p.id}"></td>
+        <td>
+          <label class="switch">
+            <input type="checkbox" data-activo="${p.id}" ${activo ? "checked" : ""}>
+            <span class="switch-slider"></span>
+          </label>
+        </td>
         <td>
           <div class="row-actions">
             <button class="btn-edit" data-edit="${p.id}">Editar</button>
+            <button class="btn-dup" data-dup="${p.id}" title="Duplicar"><i class="fa-regular fa-copy"></i></button>
             <button class="btn-del" data-del="${p.id}">Borrar</button>
           </div>
         </td>
@@ -200,13 +238,89 @@ function renderTable() {
     })
     .join("");
 
+  $("#loadMoreBtn").style.display = filtered.length > visibleCount ? "inline-block" : "none";
+
   tbody.querySelectorAll("[data-edit]").forEach((b) =>
     b.addEventListener("click", () => openForm(+b.dataset.edit))
   );
   tbody.querySelectorAll("[data-del]").forEach((b) =>
     b.addEventListener("click", () => deleteProduct(+b.dataset.del))
   );
+  tbody.querySelectorAll("[data-dup]").forEach((b) =>
+    b.addEventListener("click", () => duplicateProduct(+b.dataset.dup))
+  );
+  tbody.querySelectorAll("[data-activo]").forEach((el) =>
+    el.addEventListener("change", () => toggleActivo(+el.dataset.activo, el.checked))
+  );
+  tbody.querySelectorAll("[data-price]").forEach((el) =>
+    el.addEventListener("change", () => quickUpdate(+el.dataset.price, { price: Number(el.value) || 0 }))
+  );
+  tbody.querySelectorAll("[data-stock]").forEach((el) =>
+    el.addEventListener("change", () => quickUpdate(+el.dataset.stock, { stock: Number(el.value) || 0 }))
+  );
 }
+
+// Edición rápida de precio/stock desde la tabla
+async function quickUpdate(id, fields) {
+  const { error } = await supabaseClient.from("productos").update(fields).eq("id", id);
+  if (error) { toast("Error al actualizar"); return; }
+  const p = productsCache.find((x) => x.id === id);
+  if (p) Object.assign(p, fields);
+  toast("Actualizado");
+  renderDashboard();
+}
+
+// Activar / ocultar producto de la tienda
+async function toggleActivo(id, value) {
+  const { error } = await supabaseClient.from("productos").update({ activo: value }).eq("id", id);
+  if (error) { toast("Error al cambiar estado"); loadProducts(); return; }
+  const p = productsCache.find((x) => x.id === id);
+  if (p) p.activo = value;
+  const row = document.querySelector(`[data-activo="${id}"]`)?.closest("tr");
+  if (row) row.classList.toggle("row-inactive", !value);
+  toast(value ? "Producto visible" : "Producto oculto");
+}
+
+// Duplicar un producto
+async function duplicateProduct(id) {
+  const p = productsCache.find((x) => x.id === id);
+  if (!p) return;
+  const copy = {
+    name: (p.name || "") + " (copia)",
+    category: p.category,
+    brand: p.brand,
+    tag: p.tag,
+    price: p.price,
+    old_price: p.old_price,
+    stock: p.stock,
+    sold: p.sold,
+    rating: p.rating,
+    sizes: p.sizes || [],
+    colors: p.colors || [],
+    description: p.description,
+    reviews: p.reviews || [],
+    images: p.images || [],
+    image_url: p.image_url || null,
+    activo: p.activo !== false,
+  };
+  const { error } = await supabaseClient.from("productos").insert(copy);
+  if (error) { toast("Error al duplicar"); return; }
+  toast("Producto duplicado");
+  loadProducts();
+}
+
+// Enlaza buscador, filtros y "cargar más" (una sola vez)
+function initProductFilters() {
+  const s = $("#prodSearch");
+  const cat = $("#prodCatFilter");
+  const st = $("#prodStockFilter");
+  if (s) s.addEventListener("input", () => { prodSearch = s.value; visibleCount = PAGE_SIZE; renderTable(); });
+  if (cat) cat.addEventListener("change", () => { prodCatFilter = cat.value; visibleCount = PAGE_SIZE; renderTable(); });
+  if (st) st.addEventListener("change", () => { prodStockFilter = st.value; visibleCount = PAGE_SIZE; renderTable(); });
+  const more = $("#loadMoreBtn");
+  if (more) more.addEventListener("click", () => { visibleCount += PAGE_SIZE; renderTable(); });
+}
+initProductFilters();
 
 /* =========================================================
    FORMULARIO (crear / editar)
@@ -219,17 +333,23 @@ function catNames() {
 }
 
 function fillCategories() {
+  const names = catNames();
   const sel = $("#pCategory");
-  sel.innerHTML = catNames()
-    .map((n) => `<option value="${n}">${n}</option>`)
-    .join("");
+  sel.innerHTML = names.map((n) => `<option value="${n}">${n}</option>`).join("");
+  // filtro de la tabla (conserva la selección actual)
+  const filt = $("#prodCatFilter");
+  if (filt) {
+    const cur = filt.value;
+    filt.innerHTML = `<option value="">Todas las categorías</option>` +
+      names.map((n) => `<option value="${n}">${n}</option>`).join("");
+    filt.value = cur;
+  }
 }
 
 function openForm(id) {
   $("#productForm").reset();
   $("#formError").textContent = "";
-  existingImages = [];
-  newImages = [];
+  galleryItems = [];
   fillCategories();
 
   if (id) {
@@ -238,7 +358,7 @@ function openForm(id) {
     $("#formTitle").textContent = "Editar producto";
     $("#pId").value = p.id;
     $("#pName").value = p.name || "";
-    $("#pCategory").value = p.category || CATEGORIES[0].name;
+    $("#pCategory").value = p.category || (catNames()[0] || "");
     $("#pBrand").value = p.brand || "";
     $("#pTag").value = p.tag || "";
     $("#pPrice").value = p.price || 0;
@@ -251,16 +371,15 @@ function openForm(id) {
       .map((c) => `${c.name}:${c.hex}`)
       .join(", ");
     $("#pDesc").value = p.description || "";
+    $("#pActivo").checked = p.activo !== false;
     reviewsEdit = Array.isArray(p.reviews) ? JSON.parse(JSON.stringify(p.reviews)) : [];
-    // cargar imágenes existentes (galería o, si no, la principal)
-    if (Array.isArray(p.images) && p.images.length) {
-      existingImages = [...p.images];
-    } else if (p.image_url) {
-      existingImages = [p.image_url];
-    }
+    // cargar imágenes existentes a la galería ordenable
+    let imgs = Array.isArray(p.images) && p.images.length ? p.images : (p.image_url ? [p.image_url] : []);
+    galleryItems = imgs.map((u) => ({ url: u, blob: null }));
   } else {
     $("#formTitle").textContent = "Nuevo producto";
     $("#pId").value = "";
+    $("#pActivo").checked = true;
     reviewsEdit = [];
   }
 
@@ -315,50 +434,57 @@ $("#addReviewBtn").addEventListener("click", () => {
 });
 
 // Dibuja las miniaturas (existentes + nuevas) con botón para quitar cada una
+let dragFrom = null;
+
 function renderImagePreviews() {
   const wrap = $("#imgPreview");
-  const total = existingImages.length + newImages.length;
-  if (!total) {
+  if (!galleryItems.length) {
     wrap.innerHTML = `<span class="preview-empty">Aún no has agregado fotos.</span>`;
     return;
   }
 
-  const existHtml = existingImages
-    .map(
-      (url, i) => `
-      <div class="thumb-item">
-        <img src="${url}" alt="">
-        ${i === 0 ? '<span class="thumb-main">Principal</span>' : ""}
-        <button type="button" class="thumb-remove" data-existing="${i}" title="Quitar">&times;</button>
-      </div>`
-    )
-    .join("");
-
-  const newHtml = newImages
+  wrap.innerHTML = `<div class="thumb-grid" id="thumbGrid">${galleryItems
     .map(
       (im, i) => `
-      <div class="thumb-item">
+      <div class="thumb-item" draggable="true" data-idx="${i}">
         <img src="${im.url}" alt="">
-        ${existingImages.length === 0 && i === 0 ? '<span class="thumb-main">Principal</span>' : ""}
-        <button type="button" class="thumb-remove" data-new="${i}" title="Quitar">&times;</button>
+        ${i === 0 ? '<span class="thumb-main">Principal</span>' : ""}
+        <div class="thumb-actions">
+          ${i !== 0 ? `<button type="button" class="thumb-star" data-star="${i}" title="Hacer principal">★</button>` : ""}
+          <button type="button" class="thumb-remove" data-del="${i}" title="Quitar">&times;</button>
+        </div>
       </div>`
     )
-    .join("");
+    .join("")}</div>`;
 
-  wrap.innerHTML = `<div class="thumb-grid">${existHtml}${newHtml}</div>`;
-
-  wrap.querySelectorAll("[data-existing]").forEach((b) =>
+  // quitar
+  wrap.querySelectorAll("[data-del]").forEach((b) =>
+    b.addEventListener("click", () => { galleryItems.splice(+b.dataset.del, 1); renderImagePreviews(); })
+  );
+  // hacer principal (mover al inicio)
+  wrap.querySelectorAll("[data-star]").forEach((b) =>
     b.addEventListener("click", () => {
-      existingImages.splice(+b.dataset.existing, 1);
+      const i = +b.dataset.star;
+      const [it] = galleryItems.splice(i, 1);
+      galleryItems.unshift(it);
       renderImagePreviews();
     })
   );
-  wrap.querySelectorAll("[data-new]").forEach((b) =>
-    b.addEventListener("click", () => {
-      newImages.splice(+b.dataset.new, 1);
+  // arrastrar para reordenar
+  wrap.querySelectorAll(".thumb-item").forEach((el) => {
+    el.addEventListener("dragstart", () => { dragFrom = +el.dataset.idx; el.classList.add("dragging"); });
+    el.addEventListener("dragend", () => el.classList.remove("dragging"));
+    el.addEventListener("dragover", (e) => e.preventDefault());
+    el.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const to = +el.dataset.idx;
+      if (dragFrom === null || dragFrom === to) return;
+      const [it] = galleryItems.splice(dragFrom, 1);
+      galleryItems.splice(to, 0, it);
+      dragFrom = null;
       renderImagePreviews();
-    })
-  );
+    });
+  });
 }
 
 function closeForm() {
@@ -380,7 +506,7 @@ $("#pImage").addEventListener("change", async (e) => {
   for (const file of files) {
     try {
       const blob = await processImage(file);
-      newImages.push({ blob, url: URL.createObjectURL(blob) });
+      galleryItems.push({ blob, url: URL.createObjectURL(blob) });
     } catch (err) {
       console.warn("No se pudo procesar una imagen:", file.name, err);
     }
@@ -451,17 +577,18 @@ $("#productForm").addEventListener("submit", async (e) => {
       sizes: parseSizes($("#pSizes").value),
       colors: parseColors($("#pColors").value),
       description: $("#pDesc").value.trim(),
+      activo: $("#pActivo").checked,
       reviews: reviewsEdit
         .filter((r) => (r.user || "").trim() && (r.text || "").trim())
         .map((r) => ({ user: r.user.trim(), stars: Number(r.stars) || 5, text: r.text.trim() })),
     };
 
-    // subir las fotos nuevas y armar la galería final
-    const uploaded = [];
-    for (const im of newImages) {
-      uploaded.push(await uploadImage(im.blob));
+    // armar la galería final EN ORDEN (subiendo las fotos nuevas)
+    const finalImages = [];
+    for (const it of galleryItems) {
+      if (it.blob) finalImages.push(await uploadImage(it.blob));
+      else finalImages.push(it.url);
     }
-    const finalImages = [...existingImages, ...uploaded];
     payload.images = finalImages;
     payload.image_url = finalImages[0] || null; // principal = primera
 

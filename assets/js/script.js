@@ -895,7 +895,8 @@ async function loadProducts() {
       .order("id", { ascending: true });
     if (error) throw error;
     if (data && data.length) {
-      PRODUCTS = data.map(mapRow);
+      // solo productos activos (los ocultos no se muestran en la tienda)
+      PRODUCTS = data.filter((r) => r.activo !== false).map(mapRow);
     }
   } catch (e) {
     console.warn("No se pudieron cargar productos de Supabase, usando datos de ejemplo.", e);

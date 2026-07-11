@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/fonts/poppins.css">
   <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/admin.css?v=7">
+  <link rel="stylesheet" href="assets/css/admin.css?v=8">
 </head>
 <body>
 
@@ -69,6 +69,18 @@
           <h2 class="view-title">Productos <span id="productCount" class="count-badge">0</span></h2>
           <button class="btn-primary" id="newProductBtn">＋ Nuevo producto</button>
         </div>
+
+        <div class="admin-filters">
+          <input type="text" id="prodSearch" placeholder="Buscar por nombre o marca...">
+          <select id="prodCatFilter"><option value="">Todas las categorías</option></select>
+          <select id="prodStockFilter">
+            <option value="">Todo el stock</option>
+            <option value="in">Disponibles</option>
+            <option value="low">Stock bajo (≤10)</option>
+            <option value="out">Agotados</option>
+          </select>
+        </div>
+
         <div class="admin-loading" id="adminLoading">Cargando productos...</div>
         <div class="admin-table-wrap">
           <table class="admin-table" id="productsTable">
@@ -79,11 +91,15 @@
                 <th>Categoría</th>
                 <th>Precio</th>
                 <th>Stock</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="productsTbody"></tbody>
           </table>
+        </div>
+        <div class="load-more-wrap">
+          <button class="btn-mini" id="loadMoreBtn" style="display:none">Cargar más</button>
         </div>
       </section>
 
@@ -227,6 +243,11 @@
             <label>Tallas (separadas por coma)</label>
             <input type="text" id="pSizes" placeholder="S, M, L, XL">
           </div>
+
+          <div class="form-field">
+            <label>Visible en la tienda</label>
+            <label class="switch-inline"><input type="checkbox" id="pActivo" checked> Producto activo</label>
+          </div>
         </div>
 
         <div class="form-field">
@@ -251,7 +272,7 @@
         <div class="form-field">
           <label>Fotos del producto (puedes elegir varias)</label>
           <input type="file" id="pImage" accept="image/*" multiple>
-          <small>Cada foto se ajusta sola a formato cuadrado (800×800) con fondo blanco. La primera será la principal.</small>
+          <small>Cada foto se ajusta a formato cuadrado (800×800) con fondo blanco. Arrastra para reordenar y usa la estrella para elegir la principal (la primera).</small>
           <div class="img-preview" id="imgPreview"></div>
         </div>
 
@@ -299,6 +320,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js?v=3"></script>
   <script src="assets/js/products.js?v=4"></script>
-  <script src="assets/js/admin.js?v=4"></script>
+  <script src="assets/js/admin.js?v=5"></script>
 </body>
 </html>
