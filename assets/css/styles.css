@@ -1284,10 +1284,15 @@ section h2 {
 .checkout-form h2, .checkout-summary h2 { color: var(--azul); font-size: 18px; margin-bottom: 16px; text-align: left; }
 
 .co-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-.co-field { display: flex; flex-direction: column; }
+/* min-width:0 permite que la columna se encoja; sin esto el ancho
+   intrínseco del <select> (opción larga) e inputs desbordaba el móvil. */
+.co-field { display: flex; flex-direction: column; min-width: 0; }
 .co-field.co-full { grid-column: 1 / -1; }
 .co-field label { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
 .co-field input, .co-field select, .co-field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 11px 12px;
   border: 1px solid var(--borde);
   border-radius: 8px;
