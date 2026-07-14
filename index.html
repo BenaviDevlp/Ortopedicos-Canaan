@@ -31,13 +31,14 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="apple-touch-icon" href="assets/img/favicon.png">
 
-  <!-- Rendimiento: precarga del primer banner (mejora LCP) -->
-  <link rel="preload" as="image" href="assets/img/banner_001.webp">
+  <!-- Rendimiento: precarga prioritaria del primer banner (mejora LCP) -->
+  <link rel="preload" as="image" href="assets/img/banner_001.webp" fetchpriority="high">
+  <link rel="preconnect" href="https://www.googletagmanager.com">
 
   <!-- Recursos locales (sin depender de CDN) -->
   <link rel="stylesheet" href="assets/fonts/poppins.css">
   <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/styles.css?v=13">
+  <link rel="stylesheet" href="assets/css/styles.css?v=15">
 
   <!-- Google Analytics 4 · REEMPLAZA G-XXXXXXXXXX por tu ID de medición real -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -66,12 +67,33 @@
       "addressRegion": "Bogotá D.C.",
       "addressCountry": "CO"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 4.570324078275427,
+      "longitude": -74.12959581788569
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "18:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "09:00",
+        "closes": "14:00"
+      }
+    ],
     "areaServed": "CO",
     "sameAs": []
   }
   </script>
 </head>
 <body>
+
+  <a href="#contenido" class="skip-link">Saltar al contenido</a>
 
   <!-- ===== ANNOUNCEMENT BAR ===== -->
   <div class="announce" id="announce">
@@ -86,8 +108,8 @@
     <div class="container topbar-inner">
       <span class="topbar-tagline">FABRICANTES DE CALZADO · PLANTILLAS · MULETAS · RODILLERAS Y MÁS</span>
       <div class="topbar-social">
-        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
       </div>
       <span class="topbar-mail" id="topMail">ortocanaan@hotmail.com</span>
       <nav class="topbar-links">
@@ -103,18 +125,18 @@
   <header class="header" id="inicio">
     <div class="container header-inner">
       <a href="#inicio" class="logo">
-        <img src="assets/img/logo-white.png" alt="Ortopédicos Canaan" class="logo-img">
+        <img src="assets/img/logo-white.png" alt="Ortopédicos Canaan" class="logo-img" width="657" height="260">
       </a>
 
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar productos...">
-        <button id="searchBtn" aria-label="Buscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <input type="text" id="searchInput" placeholder="Buscar productos..." aria-label="Buscar productos">
+        <button id="searchBtn" aria-label="Buscar"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button>
       </div>
 
       <div class="header-actions">
-        <button class="cat-toggle" id="catToggle"><i class="fa-solid fa-bars"></i> BUSCAR CATEGORÍAS</button>
-        <button class="cart-btn" id="cartBtn">
-          <i class="fa-solid fa-cart-shopping"></i> <span class="cart-count" id="cartCount">0</span>
+        <button class="cat-toggle" id="catToggle"><i class="fa-solid fa-bars" aria-hidden="true"></i> BUSCAR CATEGORÍAS</button>
+        <button class="cart-btn" id="cartBtn" aria-label="Ver carrito">
+          <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> <span class="cart-count" id="cartCount">0</span>
           <span class="cart-total" id="cartTotal">$ 0</span>
         </button>
         <button class="hamburger" id="hamburger" aria-label="Menú">
@@ -152,7 +174,7 @@
   <div class="overlay" id="overlay"></div>
 
   <!-- ===== HERO / SLIDER ===== -->
-  <section class="hero">
+  <section class="hero" id="contenido">
     <h1 class="visually-hidden">Ortopédicos Canaan · Fabricantes de calzado ortopédico, plantillas, muletas, rodilleras y productos ortopédicos en Bogotá</h1>
     <div class="container hero-inner">
       <div class="hero-slides" id="heroSlides">
@@ -238,7 +260,7 @@
   <footer class="footer" id="contacto">
     <div class="container footer-inner">
       <div class="footer-col">
-        <img src="assets/img/logo-white.png" alt="Ortopédicos Canaan" class="footer-logo">
+        <img src="assets/img/logo-white.png" alt="Ortopédicos Canaan" class="footer-logo" width="657" height="260">
         <p>Somos fabricantes de calzado, plantillas, muletas, rodilleras y más. Atención personalizada por WhatsApp.</p>
       </div>
       <div class="footer-col" id="conocimiento">
@@ -274,7 +296,7 @@
   <!-- ===== PRODUCT MODAL ===== -->
   <div class="modal" id="productModal">
     <div class="modal-box">
-      <button class="modal-close" id="modalClose">✕</button>
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
       <div class="modal-content" id="modalContent"><!-- filled by JS --></div>
     </div>
   </div>
@@ -283,7 +305,7 @@
   <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
       <h3>Tu carrito</h3>
-      <button id="cartClose">✕</button>
+      <button id="cartClose" aria-label="Cerrar carrito">✕</button>
     </div>
     <div class="cart-ship" id="cartShip">
       <div class="cart-ship-text" id="cartShipText"></div>
@@ -303,7 +325,7 @@
   <!-- ===== WHATSAPP FLOATING ===== -->
   <div class="wa-wrap" id="waWrap">
     <div class="wa-bubble" id="waBubble">
-      <button class="wa-bubble-close" id="waBubbleClose">✕</button>
+      <button class="wa-bubble-close" id="waBubbleClose" aria-label="Cerrar aviso">✕</button>
       ¿Necesitas ayuda? ¡Escríbenos!
     </div>
     <a href="#" class="whatsapp-float" id="whatsappFloat" aria-label="WhatsApp">
@@ -328,6 +350,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js?v=3"></script>
   <script src="assets/js/products.js?v=4"></script>
-  <script src="assets/js/script.js?v=6"></script>
+  <script src="assets/js/script.js?v=7"></script>
 </body>
 </html>

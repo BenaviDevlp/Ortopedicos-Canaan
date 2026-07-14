@@ -1318,3 +1318,103 @@ section h2 {
   .co-grid { grid-template-columns: 1fr; }
   .checkout-title { font-size: 22px; }
 }
+
+/* =========================================================
+   ACCESIBILIDAD
+   ========================================================= */
+/* Enlace "saltar al contenido": oculto hasta enfocarse con el teclado */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 3000;
+  background: var(--amarillo);
+  color: var(--azul-osc);
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: top .2s;
+}
+.skip-link:focus { top: 12px; }
+
+/* Foco visible por teclado en elementos interactivos */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.cat-card:focus-visible,
+.product-card:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mejor contraste de la categoría en las tarjetas de producto */
+.product-cat { color: #6b7280; }
+
+/* =========================================================
+   MEJORAS VISUALES SUTILES (tarjetas y ficha de producto)
+   ========================================================= */
+
+/* 1) Tarjetas: sombra base suave, hover más elegante con borde azul */
+.product-card {
+  box-shadow: 0 2px 10px rgba(16, 38, 122, 0.05);
+  transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease;
+}
+.product-card:hover {
+  box-shadow: 0 12px 28px rgba(16, 38, 122, 0.14);
+  transform: translateY(-4px);
+  border-color: #c7d2f0;
+}
+
+/* 2) Microanimación: la foto hace un leve zoom al pasar el cursor */
+.product-img img { transition: transform .45s ease; }
+.product-card:hover .product-img img { transform: scale(1.06); }
+
+/* 3) Insignias más modernas (forma de píldora y leve sombra) */
+.badge-discount, .badge-stock, .badge-tag {
+  border-radius: 20px;
+  padding: 4px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  letter-spacing: .2px;
+}
+.product-card .badge-discount + .badge-tag { top: 46px; }
+
+/* 4) Tipografía del precio con más jerarquía y botón con micro-realce */
+.price { letter-spacing: .3px; }
+.product-name { transition: color .2s ease; }
+.product-card:hover .product-name { color: var(--azul-claro); }
+.btn-yellow { transition: background .2s ease, transform .15s ease, box-shadow .2s ease; }
+.btn-yellow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(246, 185, 0, .4); }
+.btn-wa-mini { transition: background .2s ease, transform .15s ease; }
+.btn-wa-mini:hover { transform: translateY(-1px); }
+
+/* 5) Ficha (modal): miniaturas y botones con transiciones suaves */
+.modal-thumb { transition: border-color .2s ease, transform .15s ease; }
+.modal-thumb:hover { transform: translateY(-2px); }
+.modal-info h2 { letter-spacing: .2px; line-height: 1.25; }
+.size-btn { transition: background .18s ease, color .18s ease, border-color .18s ease; }
+.color-dot { transition: box-shadow .18s ease, transform .15s ease; }
+.color-dot:hover { transform: scale(1.08); }
+.btn-wa { transition: background .2s ease, transform .15s ease; }
+.btn-wa:hover { transform: translateY(-1px); }
+
+/* Botón "Compartir por WhatsApp" en la ficha de producto */
+.btn-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--azul);
+  border: 1px solid var(--borde);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  margin: 4px 0 6px;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.btn-share i { color: var(--verde-wa); }
+.btn-share:hover { background: #f0f6ff; border-color: var(--azul-claro); }

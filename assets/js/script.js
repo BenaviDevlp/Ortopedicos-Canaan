@@ -405,6 +405,8 @@ function renderModal() {
           }
         </div>
 
+        <button class="btn-share" id="modalShare"><i class="fa-solid fa-share-nodes"></i> Compartir por WhatsApp</button>
+
         ${
           inStock
             ? `<div class="qty-row">
@@ -518,6 +520,23 @@ function bindModalEvents() {
     const msg = `Hola! Quiero consultar la disponibilidad del producto *${p.name}* (${p.category}).`;
     openWhatsapp(msg);
   });
+
+  const share = $("#modalShare");
+  if (share) share.addEventListener("click", () => shareProduct(p));
+}
+
+// Comparte el producto (nombre + precio) por WhatsApp
+function shareProduct(p) {
+  const url = location.href.split("#")[0];
+  const texto =
+    `Mira este producto de Ortopédicos Canaan:\n\n` +
+    `*${p.name}* — ${money(p.price)}\n${url}`;
+  // En móvil usa el menú nativo (permite elegir WhatsApp); si no, abre WhatsApp directo
+  if (navigator.share) {
+    navigator.share({ title: p.name, text: texto, url }).catch(() => {});
+  } else {
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+  }
 }
 
 function closeModal() {
