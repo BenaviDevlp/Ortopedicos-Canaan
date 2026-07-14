@@ -9,6 +9,7 @@
   --rojo: #e63946;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { overflow-x: hidden; }
 body { font-family: "Poppins", Arial, sans-serif; color: var(--texto); background: var(--gris); }
 input, select, textarea, button { font-family: inherit; }
 

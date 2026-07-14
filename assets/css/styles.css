@@ -15,6 +15,14 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Evita el scroll horizontal que pueden provocar los paneles off-canvas
+   (menú móvil y carrito) posicionados fuera del viewport, y separa las
+   anclas del header sticky para que las secciones no queden ocultas. */
+html {
+  overflow-x: hidden;
+  scroll-padding-top: 90px;
+}
+
 body {
   font-family: "Poppins", Arial, sans-serif;
   color: var(--texto);
@@ -177,7 +185,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* Hamburger */
-.hamburger { display: none; flex-direction: column; gap: 5px; }
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px;
+  margin: -10px;              /* conserva la alineación visual */
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+}
 .hamburger span {
   width: 26px; height: 3px; background: #fff; border-radius: 2px;
   transition: .3s;
