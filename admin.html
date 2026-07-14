@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/fonts/poppins.css">
   <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/admin.css?v=8">
+  <link rel="stylesheet" href="assets/css/admin.css?v=9">
 </head>
 <body>
 
@@ -46,6 +46,7 @@
       <button class="admin-nav-btn" data-view="Productos"><i class="fa-solid fa-box"></i> Productos</button>
       <button class="admin-nav-btn" data-view="Categorias"><i class="fa-solid fa-tags"></i> Categorías</button>
       <button class="admin-nav-btn" data-view="Config"><i class="fa-solid fa-gear"></i> Configuración</button>
+      <button class="admin-nav-btn" data-view="Ayuda"><i class="fa-solid fa-circle-question"></i> Ayuda</button>
     </nav>
 
     <main class="admin-main">
@@ -180,6 +181,139 @@
           </div>
           <div class="form-error" id="configError"></div>
         </form>
+      </section>
+
+      <!-- ===== AYUDA / TUTORIAL ===== -->
+      <section class="admin-view" id="viewAyuda" style="display:none">
+        <h2 class="view-title">Guía de uso del panel</h2>
+        <p class="ayuda-intro">Bienvenido/a. Aquí aprenderás a administrar tu tienda paso a paso.
+        Toca cada tema para ver las instrucciones. No necesitas saber de tecnología. 🙂</p>
+
+        <div class="ayuda-list">
+          <details class="ayuda-item" open>
+            <summary><i class="fa-solid fa-chart-simple"></i> ¿Qué es cada sección?</summary>
+            <div class="ayuda-body">
+              <ul>
+                <li><strong>Resumen:</strong> un vistazo rápido de tu negocio (cuántos productos tienes, agotados, stock bajo y el valor de tu inventario).</li>
+                <li><strong>Productos:</strong> aquí agregas, editas o quitas los productos que se ven en la tienda.</li>
+                <li><strong>Categorías:</strong> los grupos en los que se organizan los productos (Protección, Medias, etc.).</li>
+                <li><strong>Configuración:</strong> tus datos de contacto, el cupón, el envío gratis y el banner de la página principal.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-plus"></i> Cómo agregar un producto nuevo</summary>
+            <div class="ayuda-body">
+              <ol>
+                <li>Entra a la pestaña <strong>Productos</strong>.</li>
+                <li>Haz clic en <strong>＋ Nuevo producto</strong>.</li>
+                <li>Llena el nombre, la categoría y el precio (son los más importantes).</li>
+                <li>Si tiene descuento, escribe el <strong>precio anterior</strong> (el más alto).</li>
+                <li>Escribe cuántas unidades tienes en <strong>Stock</strong>.</li>
+                <li>Sube una o varias <strong>fotos</strong> (mira el tema de fotos más abajo).</li>
+                <li>Haz clic en <strong>Guardar producto</strong>. ¡Listo, ya aparece en la tienda!</li>
+              </ol>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-images"></i> Cómo subir y ordenar las fotos</summary>
+            <div class="ayuda-body">
+              <ol>
+                <li>En el producto, haz clic en el campo de <strong>Fotos</strong> y elige una o varias imágenes.</li>
+                <li>Cada foto se ajusta sola a un formato cuadrado con fondo blanco, para que todas se vean parejas.</li>
+                <li>Para cambiar el orden, <strong>arrastra</strong> las miniaturas.</li>
+                <li>La <strong>primera foto</strong> es la principal (la que se ve en la tienda). Para elegir otra, toca la <strong>estrella ★</strong> de esa foto.</li>
+                <li>Para quitar una foto, toca la <strong>✕</strong>.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-pen"></i> Editar precio o stock rápido</summary>
+            <div class="ayuda-body">
+              <p>En la tabla de <strong>Productos</strong>, el precio y el stock son campos editables:
+              escribe el nuevo valor directamente en la casilla y se guarda solo al salir de ella.
+              Ideal para cambios rápidos sin abrir todo el formulario.</p>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-eye"></i> Ocultar o mostrar un producto</summary>
+            <div class="ayuda-body">
+              <p>En la columna <strong>Estado</strong> de cada producto hay un interruptor. Si lo apagas,
+              el producto se <strong>oculta de la tienda</strong> (pero no se borra ni pierdes sus datos).
+              Vuelve a encenderlo para mostrarlo otra vez. Útil cuando algo está agotado temporalmente.</p>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-regular fa-copy"></i> Duplicar y borrar productos</summary>
+            <div class="ayuda-body">
+              <ul>
+                <li><strong>Duplicar</strong> (ícono de copiar): crea una copia del producto para que hagas variantes rápido.</li>
+                <li><strong>Borrar</strong>: elimina el producto de forma permanente. Te pedirá confirmación.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-star"></i> Agregar reseñas a un producto</summary>
+            <div class="ayuda-body">
+              <p>Dentro del formulario del producto, en <strong>Reseñas de clientes</strong>, haz clic en
+              <strong>＋ Agregar reseña</strong>, escribe el nombre, elige las estrellas y el comentario.
+              Puedes agregar varias o quitarlas con la ✕. Las reseñas dan confianza y ayudan a vender.</p>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-tags"></i> Manejar las categorías</summary>
+            <div class="ayuda-body">
+              <ol>
+                <li>Ve a la pestaña <strong>Categorías</strong>.</li>
+                <li><strong>＋ Nueva categoría</strong> para crear una (nombre, ícono y orden).</li>
+                <li>Usa <strong>Editar</strong> o <strong>Borrar</strong> en cada una.</li>
+                <li>El <strong>orden</strong> define en qué posición aparecen en la tienda (1 va primero).</li>
+              </ol>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-gear"></i> Cambiar contacto, cupón, envío y banner</summary>
+            <div class="ayuda-body">
+              <p>En <strong>Configuración</strong> puedes cambiar, sin tocar código:</p>
+              <ul>
+                <li>Tu <strong>WhatsApp</strong>, teléfono, correo y dirección.</li>
+                <li>El <strong>cupón</strong> y su texto.</li>
+                <li>El monto para <strong>envío gratis</strong>.</li>
+                <li>El <strong>anuncio</strong> de la barra superior.</li>
+                <li>Las <strong>diapositivas del banner</strong> (título, texto e imagen).</li>
+              </ul>
+              <p>Al terminar, haz clic en <strong>Guardar configuración</strong>. Los cambios se ven en la tienda al recargar.</p>
+            </div>
+          </details>
+
+          <details class="ayuda-item">
+            <summary><i class="fa-solid fa-lightbulb"></i> Consejos y dudas frecuentes</summary>
+            <div class="ayuda-body">
+              <ul>
+                <li>Usa <strong>Ver tienda</strong> (arriba a la derecha) para revisar cómo van quedando los cambios.</li>
+                <li>Si no ves un cambio en la tienda, recárgala con <strong>Ctrl + Shift + R</strong>.</li>
+                <li>Cierra sesión cuando termines, sobre todo en computadores compartidos.</li>
+                <li>Las fotos claras y bien iluminadas venden más.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+
+        <div class="ayuda-soporte">
+          <i class="fa-solid fa-headset"></i>
+          <div>
+            <strong>¿Necesitas ayuda técnica?</strong><br>
+            Contacta a tu desarrollador: <a href="https://sbenavidev.github.io/Portafolio_Web/" target="_blank" rel="noopener">BenaviDev</a>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -320,6 +454,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js?v=3"></script>
   <script src="assets/js/products.js?v=4"></script>
-  <script src="assets/js/admin.js?v=5"></script>
+  <script src="assets/js/admin.js?v=6"></script>
 </body>
 </html>

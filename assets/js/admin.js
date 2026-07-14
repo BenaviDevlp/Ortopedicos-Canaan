@@ -100,7 +100,7 @@ async function showDashboard(user) {
    NAVEGACIÓN ENTRE SECCIONES
    ========================================================= */
 function setView(name) {
-  ["Dashboard", "Productos", "Categorias", "Config"].forEach((v) => {
+  ["Dashboard", "Productos", "Categorias", "Config", "Ayuda"].forEach((v) => {
     const sec = $("#view" + v);
     if (sec) sec.style.display = v === name ? "" : "none";
   });
