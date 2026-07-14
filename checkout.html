@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Finalizar pedido | Ortopédicos Canaan</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/fonts/poppins.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=13">
+</head>
+<body>
+
+  <!-- Encabezado simple -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/img/logo-white.png" alt="Ortopédicos Canaan" class="logo-img">
+      </a>
+      <div class="header-actions">
+        <a href="index.html" class="btn-yellow small"><i class="fa-solid fa-arrow-left"></i> Seguir comprando</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="checkout" id="checkoutMain">
+    <div class="container">
+      <h1 class="checkout-title">Finalizar pedido</h1>
+
+      <div class="checkout-grid">
+        <!-- ===== FORMULARIO ===== -->
+        <form class="checkout-form" id="checkoutForm" novalidate>
+          <h2>Datos del comprador y envío</h2>
+
+          <div class="co-grid">
+            <div class="co-field co-full">
+              <label>Nombre completo *</label>
+              <input type="text" id="fNombre" required>
+            </div>
+            <div class="co-field">
+              <label>Teléfono / WhatsApp *</label>
+              <input type="tel" id="fTelefono" required>
+            </div>
+            <div class="co-field">
+              <label>Correo (opcional)</label>
+              <input type="email" id="fCorreo">
+            </div>
+            <div class="co-field">
+              <label>Documento / Cédula (opcional)</label>
+              <input type="text" id="fDocumento">
+            </div>
+            <div class="co-field">
+              <label>Departamento *</label>
+              <input type="text" id="fDepartamento" required>
+            </div>
+            <div class="co-field">
+              <label>Ciudad *</label>
+              <input type="text" id="fCiudad" required>
+            </div>
+            <div class="co-field co-full">
+              <label>Dirección completa *</label>
+              <input type="text" id="fDireccion" placeholder="Calle, número, apto/casa" required>
+            </div>
+            <div class="co-field co-full">
+              <label>Barrio / referencia (opcional)</label>
+              <input type="text" id="fBarrio">
+            </div>
+            <div class="co-field co-full">
+              <label>Notas del pedido (opcional)</label>
+              <textarea id="fNotas" rows="2" placeholder="Indicaciones de entrega, horario, etc."></textarea>
+            </div>
+            <div class="co-field co-full">
+              <label>Método de pago</label>
+              <select id="fPago">
+                <option value="Contra entrega / Acordar por WhatsApp">Contra entrega / Acordar por WhatsApp</option>
+              </select>
+              <small>Próximamente: pago en línea con tarjeta y otros medios.</small>
+            </div>
+          </div>
+
+          <div class="co-error" id="coError"></div>
+
+          <button type="submit" class="btn-wa big" id="coSubmit">
+            <i class="fa-brands fa-whatsapp"></i> Confirmar pedido por WhatsApp
+          </button>
+        </form>
+
+        <!-- ===== RESUMEN ===== -->
+        <aside class="checkout-summary">
+          <h2>Tu pedido</h2>
+          <div id="coItems" class="co-items"></div>
+          <div class="co-line"><span>Subtotal</span><strong id="coSubtotal">$ 0</strong></div>
+          <div class="co-line"><span>Envío</span><strong id="coEnvio">Por coordinar</strong></div>
+          <div class="co-line co-total"><span>Total</span><strong id="coTotal">$ 0</strong></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== PANTALLA DE ÉXITO ===== -->
+  <div class="co-success" id="coSuccess" style="display:none">
+    <div class="co-success-box">
+      <i class="fa-solid fa-circle-check"></i>
+      <h2>¡Pedido recibido!</h2>
+      <p>Gracias por tu compra. Ya te redirigimos a WhatsApp para coordinar el pago y el envío. Si no se abrió, escríbenos directamente.</p>
+      <a href="index.html" class="btn-yellow">Volver a la tienda</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js?v=3"></script>
+  <script src="assets/js/products.js?v=4"></script>
+  <script src="assets/js/checkout.js?v=1"></script>
+</body>
+</html>

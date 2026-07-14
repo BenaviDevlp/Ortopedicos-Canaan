@@ -797,14 +797,8 @@ function checkoutWhatsapp() {
     toast("Tu carrito está vacío");
     return;
   }
-  let msg = `Hola! Quiero realizar el siguiente pedido:\n\n`;
-  CART.forEach((c, i) => {
-    const meta = [c.size, c.color].filter(Boolean).join(", ");
-    msg += `${i + 1}. *${c.name}*${meta ? ` (${meta})` : ""}\n`;
-    msg += `   Cant: ${c.qty} × ${money(c.price)} = ${money(c.price * c.qty)}\n`;
-  });
-  msg += `\n💵 *TOTAL: ${money(cartTotal())}*`;
-  openWhatsapp(msg);
+  saveCart(); // asegura que el checkout lea el carrito actualizado
+  window.location.href = "checkout.html";
 }
 
 /* =========================================================
