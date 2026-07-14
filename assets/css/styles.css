@@ -1263,23 +1263,27 @@ section h2 {
 /* =========================================================
    CHECKOUT (página de pago)
    ========================================================= */
-.checkout { padding: 40px 0 70px; background: var(--gris); min-height: 70vh; }
-.checkout-title { color: var(--azul); font-size: 28px; margin-bottom: 24px; }
+.checkout { padding: clamp(20px, 5vw, 40px) 0 70px; background: var(--gris); min-height: 70vh; }
+.checkout-title { color: var(--azul); font-size: clamp(20px, 5vw, 28px); margin-bottom: 20px; }
+/* Mobile-first: una sola columna. El resumen se muestra primero
+   para que el cliente vea el pedido y el total antes de rellenar. */
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 26px;
+  grid-template-columns: 1fr;
+  gap: 20px;
   align-items: start;
 }
+.checkout-summary { order: -1; }
 .checkout-form, .checkout-summary {
   background: #fff;
   border-radius: 12px;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 24px);
   box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  min-width: 0;               /* evita desbordes dentro del grid */
 }
 .checkout-form h2, .checkout-summary h2 { color: var(--azul); font-size: 18px; margin-bottom: 16px; text-align: left; }
 
-.co-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.co-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
 .co-field { display: flex; flex-direction: column; }
 .co-field.co-full { grid-column: 1 / -1; }
 .co-field label { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
@@ -1328,13 +1332,30 @@ section h2 {
 .co-success-box h2 { color: var(--azul); font-size: 24px; margin-bottom: 10px; }
 .co-success-box p { color: #55607a; font-size: 15px; margin-bottom: 20px; line-height: 1.6; }
 
-@media (max-width: 860px) {
-  .checkout-grid { grid-template-columns: 1fr; }
-  .checkout-summary { order: -1; }
+/* Evita el zoom automático de iOS al enfocar un campo (font-size < 16px) */
+@media (max-width: 600px) {
+  .co-field input,
+  .co-field select,
+  .co-field textarea { font-size: 16px; }
 }
-@media (max-width: 480px) {
-  .co-grid { grid-template-columns: 1fr; }
-  .checkout-title { font-size: 22px; }
+
+/* Tablet en adelante: los campos del formulario en 2 columnas */
+@media (min-width: 600px) {
+  .co-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Escritorio: formulario y resumen en paralelo.
+   El resumen vuelve a su posición y queda fijo al hacer scroll. */
+@media (min-width: 900px) {
+  .checkout-grid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 26px;
+  }
+  .checkout-summary {
+    order: 0;
+    position: sticky;
+    top: 90px;
+  }
 }
 
 /* =========================================================
